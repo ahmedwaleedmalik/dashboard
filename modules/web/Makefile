@@ -45,8 +45,9 @@ LDFLAGS += -extldflags '-static' \
   -X k8c.io/kubermatic/v2/pkg/version/kubermatic.gitVersion=$(GIT_VERSION) \
   -X k8c.io/kubermatic/v2/pkg/version/kubermatic.kubermaticDockerTag=$(KUBERMATICDOCKERTAG) \
   -X k8c.io/kubermatic/v2/pkg/version/kubermatic.uiDockerTag=$(UIDOCKERTAG) \
-  -X k8c.io/dashboard/v2/pkg/version/kubermatic.Edition=$(KUBERMATIC_EDITION) \
-  -X k8c.io/dashboard/v2/pkg/version/kubermatic.Version=$(HUMAN_VERSION)
+  -X cmd/dashboard/main.Edition=${KUBERMATIC_EDITION} \
+  -X cmd/dashboard/main.Version=${VERSION}
+
 LDFLAGS_EXTRA=-w
 BUILD_DEST ?= _build
 GOTOOLFLAGS ?= $(GOBUILDFLAGS) -ldflags '$(LDFLAGS_EXTRA) $(LDFLAGS)' $(GOTOOLFLAGS_EXTRA)

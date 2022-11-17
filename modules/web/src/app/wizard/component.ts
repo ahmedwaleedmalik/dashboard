@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild} from '
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {MatDialog, MatDialogConfig} from '@angular/material/dialog';
 import {MatStepper} from '@angular/material/stepper';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ClusterService} from '@core/services/cluster';
 import {ClusterSpecService} from '@core/services/cluster-spec';
 import {NodeDataService} from '@core/services/node-data/service';
@@ -32,6 +32,9 @@ import {NodeData} from '@shared/model/NodeSpecChange';
 import {Observable, Subject, take} from 'rxjs';
 import {filter, switchMap, takeUntil} from 'rxjs/operators';
 import {StepRegistry, steps, WizardStep} from './config';
+import _ from 'lodash';
+import {ClusterTemplateService} from '@core/services/cluster-templates';
+import {ClusterTemplate} from '@shared/entity/cluster-template';
 
 @Component({
   selector: 'km-wizard',
@@ -45,6 +48,8 @@ export class WizardComponent implements OnInit, OnDestroy {
   creating = false;
   operatingSystemProfileAnnotation = OPERATING_SYSTEM_PROFILE_ANNOTATION;
   applications: Application[] = [];
+  clusterTemplateID: string;
+  clusterTemplate: ClusterTemplate;
   readonly stepRegistry = StepRegistry;
 
   @ViewChild('stepper', {static: true}) private readonly _stepper: MatStepper;
@@ -60,11 +65,15 @@ export class WizardComponent implements OnInit, OnDestroy {
     private readonly _clusterService: ClusterService,
     private readonly _nodeDataService: NodeDataService,
     private readonly _matDialog: MatDialog,
-    private readonly _router: Router
+    private readonly _router: Router,
+    private readonly _route: ActivatedRoute,
+    private readonly _clusterTemplateService: ClusterTemplateService
   ) {}
 
   get steps(): WizardStep[] {
-    return this._wizard.steps.filter(step => step.enabled);
+    return this._wizard.steps
+      .filter(step => step.enabled)
+      .filter(step => !(this.clusterTemplateID && step.name === StepRegistry.Provider));
   }
 
   get active(): WizardStep {
@@ -86,6 +95,9 @@ export class WizardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this._wizard.reset();
 
+    // Retrieve query params
+    this.clusterTemplateID = this._route.snapshot.queryParams?.clusterTemplateID;
+
     // Init steps for wizard
     this._wizard.steps = steps;
     this._wizard.stepper = this._stepper;
@@ -98,9 +110,12 @@ export class WizardComponent implements OnInit, OnDestroy {
       }
     });
 
-    this._projectService.selectedProject
-      .pipe(takeUntil(this._unsubscribe))
-      .subscribe(project => (this.project = project));
+    this._projectService.selectedProject.pipe(takeUntil(this._unsubscribe)).subscribe(project => {
+      this.project = project;
+      if (this.clusterTemplateID) {
+        this.loadClusterTemplate();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -120,6 +135,15 @@ export class WizardComponent implements OnInit, OnDestroy {
       .create(this.project.id, createCluster)
       .pipe(switchMap(cluster => this._clusterService.cluster(this.project.id, cluster.id)))
       .pipe(takeUntil(this._unsubscribe));
+  }
+
+  loadClusterTemplate(): void {
+    this._clusterTemplateService
+      .get(this.project.id, this.clusterTemplateID)
+      .pipe(takeUntil(this._unsubscribe))
+      .subscribe(template => {
+        this.clusterTemplate = template;
+      });
   }
 
   onNext(cluster: Cluster): void {

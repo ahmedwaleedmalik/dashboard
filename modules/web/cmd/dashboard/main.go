@@ -33,8 +33,8 @@ import (
 
 // TODO(waleed): Temporary fix for go modules.
 const (
-	version = "Development"
-	edition = "N/A"
+	Version = "Development"
+	Edition = "N/A"
 )
 
 func main() {
@@ -50,7 +50,7 @@ func main() {
 	rawLog, _ := config.Build()
 	log := rawLog.Sugar()
 
-	log.Infof("Kubermatic Dashboard %s - %s", getEditionDisplayName(), version)
+	log.Infof("Kubermatic Dashboard %s - %s", getEditionDisplayName(), Version)
 
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
@@ -135,7 +135,7 @@ func isCacheDisabled(path string) bool {
 }
 
 func getEditionDisplayName() string {
-	if edition == "ce" {
+	if Edition == "ce" {
 		return "Community Edition"
 	}
 
