@@ -31025,6 +31025,13 @@
     "ClusterTemplateNodeDeployment": {
       "type": "object",
       "properties": {
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Annotations"
+        },
         "spec": {
           "$ref": "#/definitions/NodeDeploymentSpec"
         }
