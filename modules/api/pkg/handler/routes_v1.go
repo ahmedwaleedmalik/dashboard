@@ -277,9 +277,9 @@ func (r Routing) RegisterV1(mux *mux.Router, metrics common.ServerMetrics) {
 		Path("/projects/{project_id}/dc/{dc}/clusters/{cluster_id}/events").
 		Handler(r.getClusterEvents())
 
-	mux.Methods(http.MethodGet).
-		Path("/projects/{project_id}/dc/{dc}/clusters/{cluster_id}/kubeconfig").
-		Handler(r.getClusterKubeconfig())
+	// mux.Methods(http.MethodGet).
+	// 	Path("/projects/{project_id}/dc/{dc}/clusters/{cluster_id}/kubeconfig").
+	// 	Handler(r.getClusterKubeconfig())
 
 	mux.Methods(http.MethodGet).
 		Path("/projects/{project_id}/dc/{dc}/clusters/{cluster_id}/oidckubeconfig").

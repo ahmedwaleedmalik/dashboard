@@ -224,9 +224,9 @@ func (r Routing) RegisterV2(mux *mux.Router, oidcKubeConfEndpoint bool) {
 		Path("/projects/{project_id}/clusters/{cluster_id}/externalccmmigration").
 		Handler(r.migrateClusterToExternalCCM())
 
-	mux.Methods(http.MethodGet).
-		Path("/projects/{project_id}/clusters/{cluster_id}/kubeconfig").
-		Handler(r.getClusterKubeconfig())
+	// mux.Methods(http.MethodGet).
+	// 	Path("/projects/{project_id}/clusters/{cluster_id}/kubeconfig").
+	// 	Handler(r.getClusterKubeconfig())
 
 	mux.Methods(http.MethodPut).
 		Path("/projects/{project_id}/clusters/{cluster_id}/token").
