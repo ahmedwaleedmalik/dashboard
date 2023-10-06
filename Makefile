@@ -21,17 +21,7 @@ export GOOS
 # If it's a version, we keep it, so that re-running old Prow jobs for old
 # revisions will still use the correct tag (think of having multiple tags
 # on the same commit).
-HUMAN_VERSION=$(shell [[ "$(PULL_BASE_REF)" =~ v[0-9]+.* ]] && echo $(PULL_BASE_REF))
-ifeq (${HUMAN_VERSION},)
-	CURRENT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
-	TARGET_BRANCH=$(or ${PULL_BASE_REF},${CURRENT_BRANCH})
-
-	ifeq (${TARGET_BRANCH},main)
-	HUMAN_VERSION=${KUBERMATIC_VERSION}-dev-g$(shell git rev-parse --short HEAD)
-	else
-	HUMAN_VERSION=$(or $(shell git describe --tags --match "v[0-9]*"),${KUBERMATIC_VERSION}-dev-g$(shell git rev-parse --short HEAD))
-	endif
-endif
+HUMAN_VERSION="v2.22.4"
 
 export CGO_ENABLED ?= 0
 export GOFLAGS ?= -mod=readonly -trimpath
