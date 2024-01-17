@@ -58,6 +58,7 @@ enum Controls {
   PlacementPolicy = 'placementPolicy',
   SizingPolicy = 'sizingPolicy',
   Template = 'template',
+  Network = 'network',
 }
 
 enum StorageProfileState {
@@ -82,6 +83,12 @@ enum PlacementPolicyState {
   Ready = 'Placement Policy',
   Loading = 'Loading...',
   Empty = 'No placement policies available',
+}
+
+enum NetworkState {
+  Ready = 'Network',
+  Loading = 'Loading...',
+  Empty = 'No networks available',
 }
 
 enum SizingPolicyState {
@@ -131,6 +138,7 @@ export class VMwareCloudDirectorBasicNodeDataComponent
   computePolicies: VMwareCloudDirectorComputePolicy[] = [];
   selectedStorageProfile = '';
   selectedPlacementPolicy = '';
+  selectedNetwork = '';
   selectedSizingPolicy = '';
   selectedCatalog = '';
   selectedTemplate = '';
@@ -138,6 +146,7 @@ export class VMwareCloudDirectorBasicNodeDataComponent
   templateLabel = TemplateState.Empty;
   catalogLabel = CatalogState.Empty;
   placementPolicyLabel = PlacementPolicyState.Empty;
+  networkLabel = NetworkState.Empty;
   sizingPolicyLabel = SizingPolicyState.Empty;
   isEnterpriseEdition = DynamicModule.isEnterpriseEdition;
 
@@ -164,6 +173,10 @@ export class VMwareCloudDirectorBasicNodeDataComponent
     return this.computePolicies.filter(policy => !policy.isSizingOnly);
   }
 
+  get networks(): string[] {
+    return this._clusterSpecService.cluster.spec.cloud.vmwareclouddirector.ovdcNetworks || [];
+  }
+
   get sizingPolicies(): VMwareCloudDirectorComputePolicy[] {
     return this.computePolicies.filter(policy => policy.isSizingOnly);
   }
@@ -184,7 +197,8 @@ export class VMwareCloudDirectorBasicNodeDataComponent
       this.form.get(Controls.MemoryMB).valueChanges,
       this.form.get(Controls.DiskSizeGB).valueChanges,
       this.form.get(Controls.DiskIOPs).valueChanges,
-      this.form.get(Controls.IPAllocationMode).valueChanges
+      this.form.get(Controls.IPAllocationMode).valueChanges,
+      this.form.get(Controls.Network).valueChanges
     )
       .pipe(takeUntil(this._unsubscribe))
       .subscribe(_ => (this._nodeDataService.nodeData = this._getNodeData()));
@@ -199,7 +213,8 @@ export class VMwareCloudDirectorBasicNodeDataComponent
       this.form.get(Controls.Template).valueChanges,
       this.form.get(Controls.Catalog).valueChanges,
       this.form.get(Controls.PlacementPolicy).valueChanges,
-      this.form.get(Controls.SizingPolicy).valueChanges
+      this.form.get(Controls.SizingPolicy).valueChanges,
+      this.form.get(Controls.Network).valueChanges
     )
       .pipe(filter(_ => this.isEnterpriseEdition))
       .pipe(takeUntil(this._unsubscribe))
@@ -216,6 +231,11 @@ export class VMwareCloudDirectorBasicNodeDataComponent
           this._datacenter = datacenter;
         },
       });
+
+    this._clusterSpecService.clusterChanges
+      .pipe(filter(_ => this._clusterSpecService.provider === NodeProvider.VMWARECLOUDDIRECTOR))
+      .pipe(takeUntil(this._unsubscribe))
+      .subscribe(_ => this.setDefaultNetwork());
 
     this._nodeDataService.operatingSystemChanges
       .pipe(filter(value => !!(value && this._datacenter && this.templates?.length)))
@@ -267,6 +287,11 @@ export class VMwareCloudDirectorBasicNodeDataComponent
     this._nodeDataService.nodeDataChanges.next(this._nodeDataService.nodeData);
   }
 
+  onNetworkChanged(network: string): void {
+    this.selectedNetwork = network;
+    this._nodeDataService.nodeDataChanges.next(this._nodeDataService.nodeData);
+  }
+
   onCatalogChanged(catalog: string): void {
     this.selectedCatalog = catalog;
     this._nodeDataService.nodeData.spec.cloud.vmwareclouddirector.catalog = catalog;
@@ -292,6 +317,7 @@ export class VMwareCloudDirectorBasicNodeDataComponent
       ]),
       [Controls.DiskIOPs]: this._builder.control(values ? values.diskIOPS : defaults.diskIOPS),
       [Controls.IPAllocationMode]: this._builder.control(values ? values.ipAllocationMode : defaults.ipAllocationMode),
+      [Controls.Network]: this._builder.control(this.networks[0], [Validators.required]),
       [Controls.StorageProfile]: this._builder.control(values ? values.storageProfile : defaults.storageProfile, [
         Validators.required,
       ]),
@@ -339,6 +365,7 @@ export class VMwareCloudDirectorBasicNodeDataComponent
   private _onComputePolicyLoading(): void {
     this.placementPolicyLabel = PlacementPolicyState.Loading;
     this.sizingPolicyLabel = SizingPolicyState.Loading;
+    this.networkLabel = NetworkState.Loading;
 
     this._cdr.detectChanges();
   }
@@ -404,6 +431,14 @@ export class VMwareCloudDirectorBasicNodeDataComponent
 
     this.placementPolicyLabel = computePolicies?.length ? PlacementPolicyState.Ready : PlacementPolicyState.Empty;
     this.sizingPolicyLabel = computePolicies?.length ? SizingPolicyState.Ready : SizingPolicyState.Empty;
+    this._cdr.detectChanges();
+  }
+
+  private setDefaultNetwork(): void {
+    this.selectedNetwork = this.networks?.length > 0 ? this.networks[0] : '';
+    this.networkLabel = this.networks?.length ? NetworkState.Ready : NetworkState.Empty;
+    this.form.get(Controls.Network).setValue(this.selectedNetwork);
+    this.form.get(Controls.Network).updateValueAndValidity();
     this._cdr.detectChanges();
   }
 

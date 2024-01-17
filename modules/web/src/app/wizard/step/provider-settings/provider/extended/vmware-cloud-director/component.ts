@@ -98,7 +98,7 @@ export class VMwareCloudDirectorProviderExtendedComponent extends BaseFormValida
   private _organization = '';
   private _vdc = '';
   networks: VMwareCloudDirectorNetwork[] = [];
-  selectedNetwork = '';
+  selectedNetworks = [];
   networkLabel = NetworkState.Empty;
   storageProfiles: VMwareCloudDirectorStorageProfile[] = [];
   selectedStorageProfile = '';
@@ -202,9 +202,11 @@ export class VMwareCloudDirectorProviderExtendedComponent extends BaseFormValida
     }
   }
 
-  onNetworkChange(network: string): void {
-    this.selectedNetwork = network;
-    this._clusterSpecService.cluster.spec.cloud.vmwareclouddirector.ovdcNetwork = network;
+  onNetworkChange(networks: string[]): void {
+    this.selectedNetworks = networks;
+    this._clusterSpecService.cluster.spec.cloud.vmwareclouddirector.ovdcNetworks = networks;
+    // eslint-disable-next-line no-self-assign
+    this._clusterSpecService.cluster = this._clusterSpecService.cluster;
   }
 
   onStorageProfileChange(storageProfile: string): void {
@@ -264,7 +266,7 @@ export class VMwareCloudDirectorProviderExtendedComponent extends BaseFormValida
 
   private _clearNetwork(): void {
     this.networks = [];
-    this.selectedNetwork = '';
+    this.selectedNetworks = [];
     this.networkLabel = NetworkState.Empty;
     this._cdr.detectChanges();
   }

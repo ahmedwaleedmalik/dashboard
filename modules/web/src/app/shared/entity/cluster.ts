@@ -311,7 +311,7 @@ export class VMwareCloudDirectorCloudSpec {
   apiToken: string;
   organization: string;
   vdc: string;
-  ovdcNetwork: string;
+  ovdcNetworks: string[];
   vapp?: string;
   csi: VMwareCloudDirectorCSIConfig;
 
