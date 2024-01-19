@@ -4399,7 +4399,7 @@ func (r Routing) listAzureSizesNoCredentials() http.Handler {
 			middleware.UserSaver(r.userProvider),
 			middleware.SetClusterProvider(r.clusterProviderGetter, r.seedsGetter),
 			middleware.SetPrivilegedClusterProvider(r.clusterProviderGetter, r.seedsGetter),
-		)(provider.AzureSizeWithClusterCredentialsEndpoint(r.projectProvider, r.privilegedProjectProvider, r.seedsGetter, r.userInfoGetter, r.settingsProvider)),
+		)(provider.AzureSizeWithClusterCredentialsEndpoint(r.projectProvider, r.privilegedProjectProvider, r.seedsGetter, r.userInfoGetter, r.settingsProvider, r.caBundle)),
 		provider.DecodeAzureSizesNoCredentialsReq,
 		handler.EncodeJSON,
 		r.defaultServerOptions()...,
@@ -6143,7 +6143,7 @@ func (r Routing) listProjectAzureSizes() http.Handler {
 		endpoint.Chain(
 			middleware.TokenVerifier(r.tokenVerifiers, r.userProvider),
 			middleware.UserSaver(r.userProvider),
-		)(provider.AzureSizesEndpoint(r.presetProvider, r.userInfoGetter, r.seedsGetter, r.settingsProvider)),
+		)(provider.AzureSizesEndpoint(r.presetProvider, r.userInfoGetter, r.seedsGetter, r.settingsProvider, r.caBundle)),
 		provider.DecodeAzureProjectSizesReq,
 		handler.EncodeJSON,
 		r.defaultServerOptions()...,
