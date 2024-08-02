@@ -64,17 +64,12 @@ spellcheck:
 	./hack/verify-spelling.sh
 
 docker-build: build web-dist
-	docker build -t $(REPO):$(IMAGE_TAG) .
+	docker build -t $(REPO):v2.25-development-inventx-165315 .
 
 build: web-build api-build
 
 docker-push: docker-build
-	docker push $(REPO):$(IMAGE_TAG)
-	for TAG in $(ADDITIONAL_TAGS) ; do \
-		docker tag $(REPO):$(IMAGE_TAG) $(REPO):$$TAG ; \
-		docker push $(REPO):$$TAG ; \
-	done
-
+	docker push $(REPO):v2.25-development-inventx-165315
 deploy:
 	kubectl -n kubermatic patch kubermaticconfiguration kubermatic --patch '{"spec":{"ui":{"dockerTag":"$(IMAGE_TAG)"}}}' --type=merge
 
